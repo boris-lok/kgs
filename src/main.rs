@@ -18,10 +18,17 @@ mod generator;
 #[tokio::main]
 async fn main() {
     let _ = dotenv::from_path("config/.env");
+
+    tracing_subscriber::fmt()
+        .with_span_events(tracing_subscriber::fmt::format::FmtSpan::CLOSE)
+        .init();
+
     let config = Config::new();
     let env = Environment::new(config);
 
-    let route = routes(env.clone()).recover(rejection_handler);
+    let route = routes(env.clone())
+        .with(warp::trace::request())
+        .recover(rejection_handler);
 
     let addr = host_address().expect("Can get the host address");
     warp::serve(route).run(addr).await;
