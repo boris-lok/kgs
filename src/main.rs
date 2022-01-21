@@ -1,9 +1,12 @@
 use std::net::{IpAddr, SocketAddr};
 use std::str::FromStr;
 
+use warp::Filter;
+
 use crate::core::config::Config;
 use crate::core::environment::Environment;
 use crate::core::key_generator::SnowflakeGenerator;
+use crate::core::recover::rejection_handler;
 use crate::generator::route::routes;
 
 type AppResult<T> = anyhow::Result<T>;
@@ -18,7 +21,7 @@ async fn main() {
     let config = Config::new();
     let env = Environment::new(config);
 
-    let route = routes(env.clone());
+    let route = routes(env.clone()).recover(rejection_handler);
 
     let addr = host_address().expect("Can get the host address");
     warp::serve(route).run(addr).await;

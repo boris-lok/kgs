@@ -10,3 +10,9 @@ impl From<u128> for Response {
         Self { id: e }
     }
 }
+
+impl From<Response> for warp::reply::Json {
+    fn from(e: Response) -> Self {
+        warp::reply::json(&e)
+    }
+}
